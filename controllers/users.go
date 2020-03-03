@@ -11,7 +11,7 @@ type Users struct {
 }
 
 func NewUers() *Users {
-	return &Users{NewView: views.NewView("bootstrap", "views/users/new.gohtml")}
+	return &Users{NewView: views.NewView("bootstrap", "users/new")}
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
