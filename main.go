@@ -1,14 +1,29 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/zjbztianya/poppy/controllers"
+	"github.com/zjbztianya/poppy/models"
 	"net/http"
 )
 
+const (
+	user     = "root"
+	password = "123456"
+	dbname   = "test"
+)
+
 func main() {
+	sqlInfo := fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local", user, password, dbname)
+	us, err := models.NewUserService(sqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer us.Close()
+	us.AutoMigrate()
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUers()
+	usersC := controllers.NewUsers(us)
 
 	r := mux.NewRouter()
 	r.Handle("/", staticC.Home).Methods("GET")
