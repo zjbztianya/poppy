@@ -38,29 +38,21 @@ func main() {
 	us.DestructiveReset()
 
 	user := models.User{
-		Name:  "zjbztianya",
-		Email: "zjbztianya@163.com",
+		Name:     "zjbztianya",
+		Email:    "zjbztianya@163.com",
+		Password: "hello world!",
 	}
 	if err := us.Create(&user); err != nil {
 		panic(err)
 	}
-
-	user.Name = "hanhan"
-	if err := us.Update(&user); err != nil {
-		panic(err)
+	fmt.Printf("%+v\n", user)
+	if user.Remember == "" {
+		panic("Invalid remember token")
 	}
 
-	foundUser, err := us.ByEmail("zjbztianya@163.com")
+	user2, err := us.ByRemember(user.Remember)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(foundUser)
-
-	if err := us.Delete(foundUser.ID); err != nil {
-		panic(err)
-	}
-	_, err = us.ById(foundUser.ID)
-	if err != models.ErrNotFound {
-		panic("user not delete!")
-	}
+	fmt.Printf("%+v\n", *user2)
 }
