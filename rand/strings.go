@@ -14,6 +14,14 @@ func Bytes(n int) ([]byte, error) {
 	return b, nil
 }
 
+func NBytes(base64String string) (int, error) {
+	b, err := base64.URLEncoding.DecodeString(base64String)
+	if err != nil {
+		return -1, err
+	}
+	return len(b), nil
+}
+
 func String(n int) (string, error) {
 	b, err := Bytes(n)
 	if err != nil {
@@ -22,7 +30,7 @@ func String(n int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), err
 }
 
-const RememberTokenBytes  = 32
+const RememberTokenBytes = 32
 
 func RememberToken() (string, error) {
 	return String(RememberTokenBytes)
