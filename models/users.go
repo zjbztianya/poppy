@@ -35,9 +35,6 @@ type UserDB interface {
 	Create(user *User) error
 	Update(user *User) error
 	Delete(id uint) error
-	Close() error
-	AutoMigrate() error
-	DestructiveReset() error
 }
 
 type User struct {
@@ -61,14 +58,11 @@ type userService struct {
 
 var _ UserService = &userService{}
 
-func NewUserService(connectionInfo string) (UserService, error) {
-	ug, err := newUserGorm(connectionInfo)
-	if err != nil {
-		return nil, err
-	}
+func NewUserService(db *gorm.DB) UserService {
+	ug := &userGorm{db: db}
 	hmac := hash.NewHMAC(hmacSecretKey)
 	uv := newUserValidator(ug, hmac)
-	return &userService{uv}, nil
+	return &userService{uv}
 }
 
 func (us *userService) Authenticate(email, password string) (*User, error) {
@@ -94,19 +88,6 @@ type userGorm struct {
 }
 
 var _ UserDB = &userGorm{}
-
-func newUserGorm(connectionInfo string) (*userGorm, error) {
-	db, err := gorm.Open("mysql", connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-	db.LogMode(true)
-	return &userGorm{db: db}, nil
-}
-
-func (ug *userGorm) Close() error {
-	return ug.db.Close()
-}
 
 func (ug *userGorm) Create(user *User) error {
 	return ug.db.Create(user).Error
@@ -145,20 +126,6 @@ func (ug *userGorm) ByRemember(rememberHash string) (*User, error) {
 		return nil, err
 	}
 	return &user, nil
-}
-
-func (ug *userGorm) AutoMigrate() error {
-	if err := ug.db.AutoMigrate(&User{}).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-func (ug *userGorm) DestructiveReset() error {
-	if err := ug.db.DropTableIfExists(&User{}).Error; err != nil {
-		return err
-	}
-	return ug.AutoMigrate()
 }
 
 func first(db *gorm.DB, dst interface{}) error {

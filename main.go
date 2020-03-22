@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/zjbztianya/poppy/controllers"
+	"github.com/zjbztianya/poppy/middleware"
 	"github.com/zjbztianya/poppy/models"
 	"net/http"
 )
@@ -16,23 +17,35 @@ const (
 
 func main() {
 	sqlInfo := fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local", user, password, dbname)
-	us, err := models.NewUserService(sqlInfo)
+	services, err := models.NewServices(sqlInfo)
 	if err != nil {
 		panic(err)
 	}
-	defer us.Close()
-	us.AutoMigrate()
-	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(us)
+	defer services.Close()
+	services.AutoMigrate()
 
 	r := mux.NewRouter()
+	requireUserMw := middleware.RequireUser{UserService: services.User}
+	staticC := controllers.NewStatic()
+	usersC := controllers.NewUsers(services.User)
+	galleriesC := controllers.NewGalleries(services.Gallery, r)
+
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
 	r.Handle("/faq", staticC.FAQ).Methods("GET")
-	r.HandleFunc("/signup", usersC.New).Methods("GET")
+
+	r.Handle("/signup", usersC.NewView).Methods("GET")
 	r.HandleFunc("/signup", usersC.Create).Methods("POST")
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
+
+	newGallery := requireUserMw.Apply(galleriesC.New)
+	createGallery := requireUserMw.ApplyFn(galleriesC.Create)
+	r.Handle("/galleries/new", newGallery).Methods("GET")
+	r.HandleFunc("/galleries", createGallery).Methods("POST")
+	r.HandleFunc("/galleries/{id:[0-9]+}",
+		galleriesC.Show).Methods("GET").
+		Name(controllers.ShowGallery)
 	http.ListenAndServe(":8080", r)
 }

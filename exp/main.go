@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/zjbztianya/poppy/models"
 )
 
 const (
@@ -28,31 +28,10 @@ type Order struct {
 }
 
 func main() {
-	//user:password@tcp(localhost:5555)/dbname?
-	sqlInfo := fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local", user, password, dbname)
-	us, err := models.NewUserService(sqlInfo)
-	if err != nil {
-		panic(err)
-	}
-	defer us.Close()
-	us.DestructiveReset()
-
-	user := models.User{
-		Name:     "zjbztianya",
-		Email:    "zjbztianya@163.com",
-		Password: "hello world!",
-	}
-	if err := us.Create(&user); err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", user)
-	if user.Remember == "" {
-		panic("Invalid remember token")
-	}
-
-	user2, err := us.ByRemember(user.Remember)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("%+v\n", *user2)
+	ctx := context.TODO()
+	type privateKey string
+	var a privateKey = "user"
+	ctx = context.WithValue(ctx, "user", "123")
+	ctx = context.WithValue(ctx, "user", 456)
+	fmt.Println(ctx.Value("user"))
 }
