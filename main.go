@@ -45,6 +45,7 @@ func main() {
 	editGallery := requireUserMw.ApplyFn(galleriesC.Edit)
 	updateGallery := requireUserMw.ApplyFn(galleriesC.Update)
 	deleteGallery := requireUserMw.ApplyFn(galleriesC.Delete)
+	indexGallery := requireUserMw.ApplyFn(galleriesC.Index)
 	r.Handle("/galleries/new", newGallery).Methods("GET")
 	r.HandleFunc("/galleries", createGallery).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}",
@@ -53,5 +54,6 @@ func main() {
 	r.HandleFunc("/galleries/{id:[0-9]+}/edit", editGallery).Methods("GET")
 	r.HandleFunc("/galleries/{id:[0-9]+}/update", updateGallery).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}/delete", deleteGallery).Methods("POST")
+	r.HandleFunc("/galleries", indexGallery).Methods("GET")
 	http.ListenAndServe(":8080", r)
 }
