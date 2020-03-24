@@ -32,6 +32,6 @@ func main() {
 	type privateKey string
 	var a privateKey = "user"
 	ctx = context.WithValue(ctx, "user", "123")
-	ctx = context.WithValue(ctx, "user", 456)
+	ctx = context.WithValue(ctx, a, 456)
 	fmt.Println(ctx.Value("user"))
 }
