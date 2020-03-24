@@ -76,5 +76,7 @@
 {{end}}
 
 {{define "galleryImages"}}
-    <p>Coming soon...</p>
+    {{range .Images}}
+        <img src="{{.}}">
+    {{end}}
 {{end}}
