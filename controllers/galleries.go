@@ -45,7 +45,7 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := parseForm(r, &form); err != nil {
 		vd.SetAlert(err)
-		g.New.Render(w, vd)
+		g.New.Render(w, r, vd)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := g.gs.Create(&gallery); err != nil {
 		vd.SetAlert(err)
-		g.New.Render(w, vd)
+		g.New.Render(w, r, vd)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (g *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = gallery
-	g.ShowView.Render(w, vd)
+	g.ShowView.Render(w, r, vd)
 }
 
 func (g *Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
@@ -116,7 +116,7 @@ func (g *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 
 	var vd views.Data
 	vd.Yield = gallery
-	g.EditView.Render(w, vd)
+	g.EditView.Render(w, r, vd)
 }
 
 func (g *Galleries) Update(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +136,7 @@ func (g *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 	var form GalleryForm
 	if err := parseForm(r, &form); err != nil {
 		vd.SetAlert(err)
-		g.EditView.Render(w, vd)
+		g.EditView.Render(w, r, vd)
 		return
 	}
 	gallery.Title = form.Title
@@ -149,7 +149,7 @@ func (g *Galleries) Update(w http.ResponseWriter, r *http.Request) {
 			Message: "Gallery updated successfully!",
 		}
 	}
-	g.EditView.Render(w, vd)
+	g.EditView.Render(w, r, vd)
 }
 
 func (g *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
@@ -168,7 +168,7 @@ func (g *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		vd.SetAlert(err)
 		vd.Yield = gallery
-		g.EditView.Render(w, vd)
+		g.EditView.Render(w, r, vd)
 		return
 	}
 	url, err := g.r.Get(IndexGalleries).URL()
@@ -189,5 +189,5 @@ func (g *Galleries) Index(w http.ResponseWriter, r *http.Request) {
 
 	var vd views.Data
 	vd.Yield = galleries
-	g.IndexView.Render(w, vd)
+	g.IndexView.Render(w, r, vd)
 }

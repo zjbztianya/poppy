@@ -25,7 +25,8 @@ func main() {
 	services.AutoMigrate()
 
 	r := mux.NewRouter()
-	requireUserMw := middleware.RequireUser{UserService: services.User}
+	userMw := middleware.User{UserService: services.User}
+	requireUserMw := middleware.RequireUser{}
 	staticC := controllers.NewStatic()
 	usersC := controllers.NewUsers(services.User)
 	galleriesC := controllers.NewGalleries(services.Gallery, r)
@@ -57,5 +58,5 @@ func main() {
 	r.HandleFunc("/galleries/{id:[0-9]+}/delete", deleteGallery).Methods("POST")
 	r.HandleFunc("/galleries", indexGallery).Methods("GET").
 		Name(controllers.IndexGalleries)
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8080", userMw.Apply(r))
 }

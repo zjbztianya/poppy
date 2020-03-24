@@ -1,6 +1,9 @@
 package views
 
-import "log"
+import (
+	"github.com/zjbztianya/poppy/models"
+	"log"
+)
 
 const (
 	AlertLvError    = "danger"
@@ -18,6 +21,7 @@ type Alert struct {
 
 type Data struct {
 	Alert *Alert
+	User  *models.User
 	Yield interface{}
 }
 
