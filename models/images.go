@@ -9,7 +9,8 @@ import (
 
 type ImageService interface {
 	Create(galleryID uint, r io.Reader, filename string) error
-	ByGalleryID(galleryID uint) ([]string, error)
+	ByGalleryID(galleryID uint) ([]Image, error)
+	Delete(image *Image) error
 }
 
 type imageService struct{}
@@ -50,14 +51,36 @@ func (is *imageService) imagePath(galleryID uint) string {
 		fmt.Sprintf("%v", galleryID))
 }
 
-func (is *imageService) ByGalleryID(galleryID uint) ([]string, error) {
+func (is *imageService) ByGalleryID(galleryID uint) ([]Image, error) {
 	path := is.imagePath(galleryID)
-	images, err := filepath.Glob(filepath.Join(path, "*"))
+	files, err := filepath.Glob(filepath.Join(path, "*"))
 	if err != nil {
 		return nil, err
 	}
-	for i := range images {
-		images[i] = "/" + images[i]
+	images := make([]Image, len(files))
+	for i, imgStr := range files {
+		images[i] = Image{
+			GalleryID: galleryID,
+			Filename:  filepath.Base(imgStr),
+		}
 	}
 	return images, nil
+}
+
+func (is *imageService) Delete(image *Image) error {
+	return os.Remove(image.RelativePath())
+}
+
+type Image struct {
+	GalleryID uint
+	Filename  string
+}
+
+func (i *Image) Path() string {
+	return "/" + i.RelativePath()
+}
+
+func (i *Image) RelativePath() string {
+	galleryID := fmt.Sprintf("%v", i.GalleryID)
+	return filepath.ToSlash(filepath.Join("images", "galleries", galleryID, i.Filename))
 }

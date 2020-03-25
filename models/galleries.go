@@ -17,9 +17,9 @@ type GalleryDB interface {
 
 type Gallery struct {
 	gorm.Model
-	UserID uint     `gorm:"not null;index"`
-	Title  string   `gorm:"not null"`
-	Images []string `gorm:"-"`
+	UserID uint    `gorm:"not null;index"`
+	Title  string  `gorm:"not null"`
+	Images []Image `gorm:"-"`
 }
 
 type GalleryService interface {
@@ -139,10 +139,10 @@ func (gv *galleryValidator) Delete(id uint) error {
 	return gv.GalleryDB.Delete(id)
 }
 
-func (g *Gallery) ImagesSplitN(n int) [][]string {
-	ret := make([][]string, n)
+func (g *Gallery) ImagesSplitN(n int) [][]Image {
+	ret := make([][]Image, n)
 	for i := 0; i < n; i++ {
-		ret[i] = make([]string, 0)
+		ret[i] = make([]Image, 0)
 	}
 	for i, image := range g.Images {
 		bucket := i % n

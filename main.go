@@ -47,6 +47,7 @@ func main() {
 	updateGallery := requireUserMw.ApplyFn(galleriesC.Update)
 	deleteGallery := requireUserMw.ApplyFn(galleriesC.Delete)
 	indexGallery := requireUserMw.ApplyFn(galleriesC.Index)
+	deleteImage := requireUserMw.ApplyFn(galleriesC.ImageDelete)
 	imageUploadGallery := requireUserMw.ApplyFn(galleriesC.ImageUpload)
 	r.Handle("/galleries/new", newGallery).Methods("GET")
 	r.HandleFunc("/galleries", createGallery).Methods("POST")
@@ -60,6 +61,7 @@ func main() {
 	r.HandleFunc("/galleries", indexGallery).Methods("GET").
 		Name(controllers.IndexGalleries)
 	r.HandleFunc("/galleries/{id:[0-9]+}/images", imageUploadGallery).Methods("POST")
+	r.HandleFunc("/galleries/{id:[0-9]+}/images/{filename}/delete", deleteImage).Methods("POST")
 
 	imageHandler := http.FileServer(http.Dir("./images/"))
 	r.PathPrefix("/images").Handler(http.StripPrefix("/images", imageHandler))

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/zjbztianya/poppy/context"
 	"github.com/zjbztianya/poppy/models"
@@ -238,4 +239,37 @@ func (g *Galleries) ImageUpload(w http.ResponseWriter, r *http.Request) {
 		Message: "Image successfully uploaded!",
 	}
 	g.EditView.Render(w, r, vd)
+}
+
+func (g *Galleries) ImageDelete(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusFound)
+		return
+	}
+
+	filename := mux.Vars(r)["filename"]
+	image := models.Image{
+		GalleryID: gallery.ID,
+		Filename:  filename,
+	}
+	err = g.is.Delete(&image)
+	if err != nil {
+		var vd views.Data
+		vd.Yield = gallery
+		vd.SetAlert(err)
+		g.EditView.Render(w, r, vd)
+		return
+	}
+
+	url, err := g.r.Get(EditGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
+	if err != nil {
+		http.Redirect(w, r, "/galleries", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, url.Path, http.StatusFound)
 }
