@@ -1,7 +1,10 @@
 {{define "yield"}}
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            <h3>Edit your gallery</h3>
+            <h2>Edit your gallery</h2>
+            <a href="/galleries/{{.ID}}">
+                View this gallery
+            </a>
             <hr>
         </div>
         <div class="col-md-12">
@@ -76,7 +79,18 @@
 {{end}}
 
 {{define "galleryImages"}}
-    {{range .Images}}
-        <img src="{{.}}">
+    {{range .ImagesSplitN 6}}
+        <div class="col-md-2">
+            {{range .}}
+                <a href="{{.}}">
+                    <img src="{{.}}" class="thumbnail">
+                </a>
+            {{end}}
+        </div>
     {{end}}
+    <style>
+        .thumbnail {
+            width: 100%;
+        }
+    </style>
 {{end}}

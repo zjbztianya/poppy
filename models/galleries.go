@@ -138,3 +138,15 @@ func (gv *galleryValidator) Delete(id uint) error {
 	}
 	return gv.GalleryDB.Delete(id)
 }
+
+func (g *Gallery) ImagesSplitN(n int) [][]string {
+	ret := make([][]string, n)
+	for i := 0; i < n; i++ {
+		ret[i] = make([]string, 0)
+	}
+	for i, image := range g.Images {
+		bucket := i % n
+		ret[bucket] = append(ret[bucket], image)
+	}
+	return ret
+}

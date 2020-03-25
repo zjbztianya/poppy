@@ -2,6 +2,7 @@ package views
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/zjbztianya/poppy/context"
 	"html/template"
 	"io"
