@@ -51,8 +51,7 @@ func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) 
 	var buf bytes.Buffer
 	csrfField := csrf.TemplateField(r)
 	tpl := v.Template.Funcs(
-		template.FuncMap{"csrfField":
-		func() template.HTML {
+		template.FuncMap{"csrfField": func() template.HTML {
 			return csrfField
 		}})
 	err := tpl.ExecuteTemplate(&buf, v.Layout, vd)
