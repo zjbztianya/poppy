@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/zjbztianya/poppy/controllers"
 	"github.com/zjbztianya/poppy/middleware"
 	"github.com/zjbztianya/poppy/models"
+	"github.com/zjbztianya/poppy/rand"
 	"net/http"
 )
 
@@ -65,5 +67,10 @@ func main() {
 
 	imageHandler := http.FileServer(http.Dir("./images/"))
 	r.PathPrefix("/images").Handler(http.StripPrefix("/images", imageHandler))
-	http.ListenAndServe(":8080", userMw.Apply(r))
+	authKey, err := rand.Bytes(32)
+	if err != nil {
+		panic(err)
+	}
+	csrfMw := csrf.Protect(authKey, csrf.Secure(false))
+	http.ListenAndServe(":8080", csrfMw(userMw.Apply(r)))
 }
