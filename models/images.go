@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 )
@@ -53,15 +54,15 @@ func (is *imageService) imagePath(galleryID uint) string {
 
 func (is *imageService) ByGalleryID(galleryID uint) ([]Image, error) {
 	path := is.imagePath(galleryID)
-	files, err := filepath.Glob(filepath.Join(path, "*"))
+	imgStrings, err := filepath.Glob(filepath.Join(path, "*"))
 	if err != nil {
 		return nil, err
 	}
-	images := make([]Image, len(files))
-	for i, imgStr := range files {
+	images := make([]Image, len(imgStrings))
+	for i := range imgStrings {
 		images[i] = Image{
 			GalleryID: galleryID,
-			Filename:  filepath.Base(imgStr),
+			Filename:  filepath.Base(imgStrings[i]),
 		}
 	}
 	return images, nil
@@ -77,7 +78,8 @@ type Image struct {
 }
 
 func (i *Image) Path() string {
-	return "/" + i.RelativePath()
+	path := url.URL{Path: "/" + i.RelativePath()}
+	return path.String()
 }
 
 func (i *Image) RelativePath() string {

@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"net/url"
 	"path/filepath"
 )
 
@@ -29,6 +30,9 @@ func NewView(layout string, files ...string) *View {
 	t, err := template.New("").Funcs(template.FuncMap{
 		"csrfField": func() (template.HTML, error) {
 			return "", errors.New("csrfField is not implemented")
+		},
+		"pathEscape": func(s string) string {
+			return url.PathEscape(s)
 		},
 	}).ParseFiles(files...)
 	if err != nil {
