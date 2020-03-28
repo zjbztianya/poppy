@@ -37,11 +37,13 @@ func main() {
 	r.Handle("/contact", staticC.Contact).Methods("GET")
 	r.Handle("/faq", staticC.FAQ).Methods("GET")
 
+	logoutUser := requireUserMw.ApplyFn(usersC.Logout)
 	r.Handle("/signup", usersC.NewView).Methods("GET")
 	r.HandleFunc("/signup", usersC.Create).Methods("POST")
 	r.Handle("/login", usersC.LoginView).Methods("GET")
 	r.HandleFunc("/login", usersC.Login).Methods("POST")
 	r.HandleFunc("/cookietest", usersC.CookieTest).Methods("GET")
+	r.Handle("/logout", logoutUser).Methods("POST")
 
 	newGallery := requireUserMw.Apply(galleriesC.New)
 	createGallery := requireUserMw.ApplyFn(galleriesC.Create)
