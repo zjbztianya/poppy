@@ -240,7 +240,12 @@ func (g *Galleries) ImageUpload(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/galleries", http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, url.Path, http.StatusFound)
+	alert := views.Alert{
+		Level:   views.AlertLvSuccess,
+		Message: "Upload image success!",
+	}
+
+	views.RedirectAlert(w, r, url.Path, http.StatusFound, alert)
 }
 
 func (g *Galleries) ImageDelete(w http.ResponseWriter, r *http.Request) {
