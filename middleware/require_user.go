@@ -1,60 +1,44 @@
 package middleware
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/zjbztianya/poppy/context"
 	"github.com/zjbztianya/poppy/models"
 	"net/http"
 	"strings"
 )
 
-type User struct {
-	models.UserService
-}
-
-func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
+func User(userService models.UserService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		path := c.Request.URL.Path
 		if strings.HasPrefix(path, "/images/") {
-			next(w, r)
+			c.Next()
 			return
 		}
 
-		cookie, err := r.Cookie("remember_token")
+		cookie, err := c.Cookie("remember_token")
 		if err != nil {
-			next(w, r)
+			c.Next()
 			return
 		}
-
-		user, err := mw.UserService.ByRemember(cookie.Value)
+		user, err := userService.ByRemember(cookie)
 		if err != nil {
-			next(w, r)
+			c.Next()
 			return
 		}
-
-		ctx := r.Context()
-		ctx = context.WithUser(ctx, user)
-		r = r.WithContext(ctx)
-		next(w, r)
+		context.WithUser(c, user)
+		c.Next()
 	}
 }
 
-func (mw *User) Apply(next http.Handler) http.HandlerFunc {
-	return mw.ApplyFn(next.ServeHTTP)
-}
-
-type RequireUser struct{}
-
-func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user := context.User(r.Context())
+func RequireUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := context.User(c)
 		if user == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
+			c.Redirect(http.StatusFound, "/login")
+			c.Abort()
 			return
 		}
-		next(w, r)
+		c.Next()
 	}
-}
-
-func (mw *RequireUser) Apply(next http.Handler) http.HandlerFunc {
-	return mw.ApplyFn(next.ServeHTTP)
 }

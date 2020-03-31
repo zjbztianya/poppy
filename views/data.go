@@ -1,8 +1,9 @@
 package views
 
 import (
-	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/zjbztianya/poppy/models"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -22,10 +23,13 @@ type Alert struct {
 	Message string
 }
 
-type Data struct {
+type Response struct {
 	Alert *Alert
 	User  *models.User
-	Yield interface{}
+	Data  struct {
+		Yield     interface{}
+		CsrfField template.HTML
+	}
 }
 
 type PublicError interface {
@@ -33,7 +37,7 @@ type PublicError interface {
 	Public() string
 }
 
-func (d *Data) SetAlert(err error) {
+func (d *Response) SetAlert(err error) {
 	var msg string
 	if pErr, ok := err.(PublicError); ok {
 		msg = pErr.Public()
@@ -47,14 +51,14 @@ func (d *Data) SetAlert(err error) {
 	}
 }
 
-func (d *Data) AlertError(msg string) {
+func (d *Response) AlertError(msg string) {
 	d.Alert = &Alert{
 		Level:   AlertLvError,
 		Message: msg,
 	}
 }
 
-func persistAlert(w http.ResponseWriter, alert Alert) {
+func persistAlert(c *gin.Context, alert Alert) {
 	expiresAt := time.Now().Add(5 * time.Minute)
 	lvl := http.Cookie{
 		Name:     "alert_level",
@@ -68,11 +72,11 @@ func persistAlert(w http.ResponseWriter, alert Alert) {
 		Expires:  expiresAt,
 		HttpOnly: true,
 	}
-	http.SetCookie(w, &lvl)
-	http.SetCookie(w, &msg)
+	http.SetCookie(c.Writer, &lvl)
+	http.SetCookie(c.Writer, &msg)
 }
 
-func clearAlert(w http.ResponseWriter) {
+func clearAlert(c *gin.Context) {
 	lvl := http.Cookie{
 		Name:     "alert_level",
 		Value:    "",
@@ -85,27 +89,27 @@ func clearAlert(w http.ResponseWriter) {
 		Expires:  time.Now(),
 		HttpOnly: true,
 	}
-	http.SetCookie(w, &lvl)
-	http.SetCookie(w, &msg)
+	http.SetCookie(c.Writer, &lvl)
+	http.SetCookie(c.Writer, &msg)
 }
 
-func getAlert(r *http.Request) *Alert {
-	lvl, err := r.Cookie("alert_level")
+func getAlert(c *gin.Context) *Alert {
+	lvl, err := c.Cookie("alert_level")
 	if err != nil {
 		return nil
 	}
-	msg, err := r.Cookie("alert_message")
+	msg, err := c.Cookie("alert_message")
 	if err != nil {
 		return nil
 	}
 	alert := Alert{
-		Level:   lvl.Value,
-		Message: msg.Value,
+		Level:   lvl,
+		Message: msg,
 	}
 	return &alert
 }
 
-func RedirectAlert(w http.ResponseWriter, r *http.Request, urlStr string, code int, alert Alert) {
-	persistAlert(w, alert)
-	http.Redirect(w, r, urlStr, code)
+func RedirectAlert(c *gin.Context, urlStr string, code int, alert Alert) {
+	persistAlert(c, alert)
+	c.Redirect(code, urlStr)
 }

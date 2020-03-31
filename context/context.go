@@ -1,22 +1,20 @@
 package context
 
 import (
-	"context"
+	"github.com/gin-gonic/gin"
 	"github.com/zjbztianya/poppy/models"
 )
 
-type privateKey string
-
 const (
-	userKey privateKey = "user"
+	userKey string = "user"
 )
 
-func WithUser(ctx context.Context, user *models.User) context.Context {
-	return context.WithValue(ctx, userKey, user)
+func WithUser(c *gin.Context, user *models.User) {
+	c.Set(userKey, user)
 }
 
-func User(ctx context.Context) *models.User {
-	if value := ctx.Value(userKey); value != nil {
+func User(c *gin.Context) *models.User {
+	if value := c.Value(userKey); value != nil {
 		if user, ok := value.(*models.User); ok {
 			return user
 		}

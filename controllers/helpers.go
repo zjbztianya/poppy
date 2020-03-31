@@ -1,18 +1,16 @@
 package controllers
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/schema"
-	"net/http"
 )
 
-const maxMultipartMem = 1 << 20
-
-func parseForm(r *http.Request, dst interface{}) error {
-	if err := r.ParseForm(); err != nil {
+func parseForm(c *gin.Context, dst interface{}) error {
+	if err := c.Request.ParseForm(); err != nil {
 		return err
 	}
 
 	dec := schema.NewDecoder()
 	dec.IgnoreUnknownKeys(true)
-	return dec.Decode(dst, r.PostForm)
+	return dec.Decode(dst, c.Request.PostForm)
 }

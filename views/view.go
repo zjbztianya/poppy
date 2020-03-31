@@ -1,20 +1,21 @@
 package views
 
 import (
-	"bytes"
 	"errors"
+	"fmt"
+	"github.com/gin-contrib/multitemplate"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
 	"github.com/zjbztianya/poppy/context"
 	"html/template"
-	"io"
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strings"
 )
 
 type View struct {
-	Template *template.Template
-	Layout   string
+	Name string
 }
 
 var (
@@ -23,55 +24,53 @@ var (
 	TemplateExt = ".gohtml"
 )
 
-func NewView(layout string, files ...string) *View {
+func NewView(r *gin.Engine, name string, files ...string) *View {
+	render, ok := r.HTMLRender.(multitemplate.Renderer)
+	if !ok {
+		panic(errors.New("not set multitemplate render!"))
+	}
 	addTemplatePath(files)
 	addTemplateExt(files)
 	files = append(files, layoutFiles()...)
-	t, err := template.New("").Funcs(template.FuncMap{
-		"csrfField": func() (template.HTML, error) {
-			return "", errors.New("csrfField is not implemented")
-		},
+	for i, file := range files {
+		if strings.HasSuffix(file, "bootstrap.gohtml") {
+			files[0], files[i] = files[i], files[0]
+			break
+		}
+	}
+	funMap := template.FuncMap{
 		"pathEscape": func(s string) string {
 			return url.PathEscape(s)
 		},
-	}).ParseFiles(files...)
-	if err != nil {
-		panic(err)
 	}
-	return &View{t, layout}
+	render.AddFromFilesFuncs(name, funMap, files...)
+	return &View{name}
 }
 
-func (v *View) Render(w http.ResponseWriter, r *http.Request, data interface{}) {
-	w.Header().Set("Content-Type", "text/html")
-	var vd Data
+func (v *View) Render(c *gin.Context, code int, data interface{}) {
+	var vd Response
 	switch d := data.(type) {
-	case Data:
+	case Response:
 		vd = d
 	default:
-		data = Data{Yield: data}
+		vd = Response{
+			Data: struct {
+				Yield     interface{}
+				CsrfField template.HTML
+			}{Yield: data},
+		}
 	}
-	if alert := getAlert(r); alert != nil {
+	if alert := getAlert(c); alert != nil {
 		vd.Alert = alert
-		clearAlert(w)
+		clearAlert(c)
 	}
-	vd.User = context.User(r.Context())
-
-	var buf bytes.Buffer
-	csrfField := csrf.TemplateField(r)
-	tpl := v.Template.Funcs(
-		template.FuncMap{"csrfField": func() template.HTML {
-			return csrfField
-		}})
-	err := tpl.ExecuteTemplate(&buf, v.Layout, vd)
-	if err != nil {
-		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
-		return
-	}
-	io.Copy(w, &buf)
+	vd.User = context.User(c)
+	vd.Data.CsrfField = csrf.TemplateField(c.Request)
+	c.HTML(code, v.Name, vd)
 }
 
-func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	v.Render(w, r, nil)
+func (v *View) HTML(c *gin.Context) {
+	v.Render(c, http.StatusOK, nil)
 }
 
 func layoutFiles() []string {

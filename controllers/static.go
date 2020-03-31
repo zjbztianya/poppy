@@ -1,6 +1,9 @@
 package controllers
 
-import "github.com/zjbztianya/poppy/views"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/zjbztianya/poppy/views"
+)
 
 type Static struct {
 	Home    *views.View
@@ -8,13 +11,13 @@ type Static struct {
 	FAQ     *views.View
 }
 
-func NewStatic() *Static {
+func NewStatic(r *gin.Engine) *Static {
 	return &Static{
-		views.NewView(
-			"bootstrap", "static/home"),
-		views.NewView(
-			"bootstrap", "static/contact"),
-		views.NewView(
-			"bootstrap", "static/faq"),
+		views.NewView(r,
+			"static_home", "static/home"),
+		views.NewView(r,
+			"static_contact", "static/contact"),
+		views.NewView(r,
+			"static_faq", "static/faq"),
 	}
 }

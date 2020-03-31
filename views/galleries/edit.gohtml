@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
             <h2>Edit your gallery</h2>
-            <a href="/galleries/{{.ID}}">
+            <a href="/galleries/show/{{.Yield.ID}}">
                 View this gallery
             </a>
             <hr>
@@ -38,14 +38,14 @@
 {{end}}
 
 {{define "editGalleryForm"}}
-    <form action="/galleries/{{.ID}}/update" method="POST"
+    <form action="/galleries/update/{{.Yield.ID}}" method="POST"
           class="form-horizontal">
-        {{csrfField}}
+        {{.CsrfField}}
         <div class="form-group">
             <label for="title" class="col-md-1 control-label">Title</label>
             <div class="col-md-10">
                 <input type="text" name="title" class="form-control" id="title"
-                       placeholder="What is the title of your gallery?" value="{{.Title}}">
+                       placeholder="What is the title of your gallery?" value="{{.Yield.Title}}">
             </div>
             <div class="col-md-1">
                 <button type="submit" class="btn btn-default">Save</button>
@@ -55,9 +55,9 @@
 {{end}}
 
 {{define "deleteGalleryForm"}}
-    <form action="/galleries/{{.ID}}/delete" method="POST"
+    <form action="/galleries/delete/{{.Yield.ID}}" method="POST"
           class="form-horizontal">
-        {{csrfField}}
+        {{.CsrfField}}
         <div class="form-group">
             <div class="col-md-10 col-md-offset-1">
                 <button type="submit" class="btn btn-danger">Delete</button>
@@ -67,9 +67,9 @@
 {{end}}
 
 {{define "uploadImageForm"}}
-    <form action="/galleries/{{.ID}}/images" method="POST"
+    <form action="/galleries/images/{{.Yield.ID}}" method="POST"
           enctype="multipart/form-data" class="form-horizontal">
-        {{csrfField}}
+        {{.CsrfField}}
         <div class="form-group">
             <label for="images" class="col-md-1 control-label">Add Images</label>
             <div class="col-md-10">
@@ -82,13 +82,20 @@
 {{end}}
 
 {{define "galleryImages"}}
-    {{range .ImagesSplitN 6}}
+    {{$CsrfField := .CsrfField}}
+    {{range .Yield.ImagesSplitN 6}}
         <div class="col-md-2">
             {{range .}}
                 <a href="{{.Path}}">
                     <img src="{{.Path}}" class="thumbnail">
                 </a>
-                {{template "deleteImageForm" .}}
+                <form action="/galleries/delete/{{.GalleryID}}/images/{{pathEscape .Filename}}"
+                      method="POST">
+                    {{$CsrfField}}
+                    <button type="submit" class="btn btn-default btn-delete">
+                        Delete
+                    </button>
+                </form>
             {{end}}
         </div>
     {{end}}
@@ -97,14 +104,4 @@
             width: 100%;
         }
     </style>
-{{end}}
-
-{{define "deleteImageForm"}}
-    <form action="/galleries/{{.GalleryID}}/images/{{pathEscape .Filename}}/delete"
-          method="POST">
-        {{csrfField}}
-        <button type="submit" class="btn btn-default btn-delete">
-            Delete
-        </button>
-    </form>
 {{end}}

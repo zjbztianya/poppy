@@ -6,7 +6,7 @@
                     <h3 class="panel-title">Welcome Back!</h3>
                 </div>
                 <div class="panel-body">
-                    {{template "loginForm"}}
+                    {{template "loginForm" .}}
                 </div>
             </div>
         </div>
@@ -15,7 +15,7 @@
 
 {{define "loginForm"}}
     <form action="/login" method="POST">
-        {{csrfField}}
+        {{.CsrfField}}
         <div class="form-group">
             <label for="email">Email address</label>
             <input type="email" name="email" class="form-control"

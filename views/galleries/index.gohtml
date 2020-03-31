@@ -11,17 +11,17 @@
                 </tr>
                 </thead>
                 <tbody>
-                {{range .}}
+                {{range .Yield}}
                     <tr>
                         <th scope="row">{{.ID}}</th>
                         <td>{{.Title}}</td>
                         <td>
-                            <a href="/galleries/{{.ID}}">
+                            <a href="/galleries/show/{{.ID}}">
                                 View
                             </a>
                         </td>
                         <td>
-                            <a href="/galleries/{{.ID}}/edit">
+                            <a href="/galleries/edit/{{.ID}}">
                                 Edit
                             </a>
                         </td>

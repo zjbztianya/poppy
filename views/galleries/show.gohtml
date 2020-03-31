@@ -2,13 +2,13 @@
     <div class="row">
         <div class="col-md-12">
             <h1>
-                {{.Title}}
+                {{.Yield.Title}}
             </h1>
             <hr>
         </div>
     </div>
     <div class="row">
-        {{range .ImagesSplitN 3}}
+        {{range .Yield.ImagesSplitN 3}}
             <div class="col-md-4">
                 {{range .}}
                     <a href="{{.Path}}">
