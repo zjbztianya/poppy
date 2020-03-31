@@ -3,8 +3,8 @@ package models
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/zjbztianya/poppy/hash"
-	"github.com/zjbztianya/poppy/rand"
+	"github.com/zjbztianya/poppy/util/hash"
+	"github.com/zjbztianya/poppy/util/rand"
 	"golang.org/x/crypto/bcrypt"
 	"regexp"
 	"strings"

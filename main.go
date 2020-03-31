@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gorilla/csrf"
 	"github.com/zjbztianya/poppy/models"
-	"github.com/zjbztianya/poppy/rand"
 	"github.com/zjbztianya/poppy/router"
+	"github.com/zjbztianya/poppy/util/rand"
 	"net/http"
 )
 

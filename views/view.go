@@ -2,11 +2,10 @@ package views
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
-	"github.com/zjbztianya/poppy/context"
+	"github.com/zjbztianya/poppy/util/context"
 	"html/template"
 	"net/http"
 	"net/url"

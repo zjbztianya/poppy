@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/zjbztianya/poppy/context"
 	"github.com/zjbztianya/poppy/models"
+	"github.com/zjbztianya/poppy/util/context"
 	"net/http"
 	"strings"
 )

@@ -3,9 +3,9 @@ package controllers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/zjbztianya/poppy/context"
 	"github.com/zjbztianya/poppy/models"
-	"github.com/zjbztianya/poppy/rand"
+	"github.com/zjbztianya/poppy/util/context"
+	"github.com/zjbztianya/poppy/util/rand"
 	"github.com/zjbztianya/poppy/views"
 	"net/http"
 	"time"
