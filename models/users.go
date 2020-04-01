@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/zjbztianya/poppy/conf"
 	"github.com/zjbztianya/poppy/util/hash"
 	"github.com/zjbztianya/poppy/util/rand"
 	"golang.org/x/crypto/bcrypt"
@@ -21,11 +22,6 @@ const (
 	ErrPasswordRequired  modelError = "models: password is required"
 	ErrRememberRequired  modelError = "models: remember token is required"
 	ErrRememberTooShort  modelError = "models: remember token must be at least 32 bytes"
-)
-
-const (
-	userPwPepper  = "secret-random-str"
-	hmacSecretKey = "secret-hmac-key"
 )
 
 type UserDB interface {
@@ -60,7 +56,7 @@ var _ UserService = &userService{}
 
 func NewUserService(db *gorm.DB) UserService {
 	ug := &userGorm{db: db}
-	hmac := hash.NewHMAC(hmacSecretKey)
+	hmac := hash.NewHMAC(conf.Conf.App.HmacSecretKey)
 	uv := newUserValidator(ug, hmac)
 	return &userService{uv}
 }
@@ -72,7 +68,7 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	}
 	err = bcrypt.CompareHashAndPassword(
 		[]byte(foundUser.PasswordHash),
-		[]byte(password+userPwPepper))
+		[]byte(password+conf.Conf.App.UserPwPepper))
 	switch err {
 	case nil:
 		return foundUser, nil
@@ -228,7 +224,7 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 		return nil
 	}
 
-	pwBytes := []byte(user.Password + userPwPepper)
+	pwBytes := []byte(user.Password + conf.Conf.App.UserPwPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return err

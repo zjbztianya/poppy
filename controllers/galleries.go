@@ -10,12 +10,6 @@ import (
 	"strconv"
 )
 
-const (
-	ShowGallery    = "show_gallery"
-	IndexGalleries = "index_galleries"
-	EditGallery    = "edit_gallery"
-)
-
 type Galleries struct {
 	New       *views.View
 	ShowView  *views.View

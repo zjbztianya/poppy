@@ -2,22 +2,19 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/csrf"
+	"github.com/zjbztianya/poppy/conf"
 	"github.com/zjbztianya/poppy/models"
 	"github.com/zjbztianya/poppy/router"
 	"github.com/zjbztianya/poppy/util/rand"
 	"net/http"
 )
 
-const (
-	user     = "root"
-	password = "123456"
-	dbname   = "test"
-)
-
 func main() {
-	sqlInfo := fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local", user, password, dbname)
-	services, err := models.NewServices(sqlInfo)
+	conf.Init()
+	gin.SetMode(conf.Conf.Server.RunMode)
+	services, err := models.NewServices()
 	if err != nil {
 		panic(err)
 	}
@@ -25,10 +22,11 @@ func main() {
 	services.AutoMigrate()
 
 	r := router.InitRouter(services)
-	authKey, err := rand.Bytes(32)
+	authKey, err := rand.Bytes(conf.Conf.App.AuthKeyBytes)
 	if err != nil {
 		panic(err)
 	}
-	csrfMw := csrf.Protect(authKey, csrf.Secure(false))
-	http.ListenAndServe(":8080", csrfMw(r))
+	csrfMw := csrf.Protect(authKey, csrf.Secure(conf.Conf.App.CsrfSecure))
+	endPoint := fmt.Sprintf(":%d", conf.Conf.Server.HttpPort)
+	http.ListenAndServe(endPoint, csrfMw(r))
 }

@@ -1,6 +1,10 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"fmt"
+	"github.com/jinzhu/gorm"
+	"github.com/zjbztianya/poppy/conf"
+)
 
 type Services struct {
 	Gallery GalleryService
@@ -9,12 +13,16 @@ type Services struct {
 	db      *gorm.DB
 }
 
-func NewServices(connectionInfo string) (*Services, error) {
-	db, err := gorm.Open("mysql", connectionInfo)
+func NewServices() (*Services, error) {
+	dbConf := conf.Conf.Database
+	connectionInfo := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		dbConf.User, dbConf.Password, dbConf.Host, dbConf.Name)
+	db, err := gorm.Open(dbConf.Type, connectionInfo)
 	if err != nil {
 		return nil, err
 	}
-	db.LogMode(true)
+	db.LogMode(dbConf.LogMode)
+
 	return &Services{
 		Gallery: NewGalleryService(db),
 		User:    NewUserService(db),
