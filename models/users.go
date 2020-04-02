@@ -7,7 +7,6 @@ import (
 	"github.com/zjbztianya/poppy/util/hash"
 	"github.com/zjbztianya/poppy/util/rand"
 	"golang.org/x/crypto/bcrypt"
-	"regexp"
 	"strings"
 )
 
@@ -15,13 +14,11 @@ const (
 	ErrNotFound          modelError = "models: resource not found"
 	ErrIDInvalid         modelError = "models: ID provided was invalid"
 	ErrPasswordIncorrect modelError = "models: incorrect password provided"
-	ErrEmailRequired     modelError = "models: email address is required"
-	ErrEmailInvalid      modelError = "models: email address is not valid"
 	ErrEmailTaken        modelError = "models: email address is already taken"
-	ErrPasswordTooShort  modelError = "models: password must be at least 8 characters long"
 	ErrPasswordRequired  modelError = "models: password is required"
 	ErrRememberRequired  modelError = "models: remember token is required"
 	ErrRememberTooShort  modelError = "models: remember token must be at least 32 bytes"
+	ErrBadRequst		 modelError = "models: bad request param"
 )
 
 type UserDB interface {
@@ -145,16 +142,13 @@ func runUserValFns(user *User, fns ...userValFn) error {
 
 type userValidator struct {
 	UserDB
-	hmac       hash.HMAC
-	emailRegex *regexp.Regexp
+	hmac hash.HMAC
 }
 
 func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
 	return &userValidator{
 		UserDB: udb,
 		hmac:   hmac,
-		emailRegex: regexp.MustCompile(
-			`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,16}$`),
 	}
 }
 
@@ -174,15 +168,12 @@ func (uv *userValidator) ByEmail(email string) (*User, error) {
 
 func (uv *userValidator) Update(user *User) error {
 	if err := runUserValFns(user,
-		uv.passwordMinLength,
 		uv.bcryptPassword,
 		uv.passwordHashRequired,
 		uv.rememberMinBytes,
 		uv.hmacRemember,
 		uv.rememberHashRequired,
 		uv.normalizeEmail,
-		uv.requireEmail,
-		uv.emailFormat,
 		uv.emailIsAvail); err != nil {
 		return err
 	}
@@ -191,8 +182,6 @@ func (uv *userValidator) Update(user *User) error {
 
 func (uv *userValidator) Create(user *User) error {
 	if err := runUserValFns(user,
-		uv.passwordRequired,
-		uv.passwordMinLength,
 		uv.bcryptPassword,
 		uv.passwordHashRequired,
 		uv.setRememberIfUnset,
@@ -200,8 +189,6 @@ func (uv *userValidator) Create(user *User) error {
 		uv.hmacRemember,
 		uv.rememberHashRequired,
 		uv.normalizeEmail,
-		uv.requireEmail,
-		uv.emailFormat,
 		uv.emailIsAvail); err != nil {
 		return err
 	}
@@ -269,23 +256,6 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 	return nil
 }
 
-func (uv *userValidator) requireEmail(user *User) error {
-	if user.Email == "" {
-		return ErrEmailRequired
-	}
-	return nil
-}
-
-func (uv *userValidator) emailFormat(user *User) error {
-	if user.Email == "" {
-		return nil
-	}
-	if !uv.emailRegex.MatchString(user.Email) {
-		return ErrEmailInvalid
-	}
-	return nil
-}
-
 func (uv *userValidator) emailIsAvail(user *User) error {
 	existing, err := uv.ByEmail(user.Email)
 	if err == ErrNotFound {
@@ -296,23 +266,6 @@ func (uv *userValidator) emailIsAvail(user *User) error {
 	}
 	if user.ID != existing.ID {
 		return ErrEmailTaken
-	}
-	return nil
-}
-
-func (uv *userValidator) passwordMinLength(user *User) error {
-	if user.Password == "" {
-		return nil
-	}
-	if len(user.Password) < 8 {
-		return ErrPasswordTooShort
-	}
-	return nil
-}
-
-func (uv *userValidator) passwordRequired(user *User) error {
-	if user.Password == "" {
-		return ErrPasswordRequired
 	}
 	return nil
 }

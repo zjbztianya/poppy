@@ -26,25 +26,25 @@ func NewUsers(us models.UserService, r *gin.Engine) *Users {
 }
 
 type SignupForm struct {
-	Name     string `schema:"name"`
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
+	Name     string `form:"name" binding:"required,max=30"`
+	Email    string `form:"email" binding:"required,email"`
+	Password string `form:"password" binding:"required,gte=8,lte=16"`
 }
 
 type LoginForm struct {
-	Email    string `schema:"email"`
-	Password string `schema:"password"`
+	Email    string `email:"email" binding:"required,email"`
+	Password string `form:"password" binding:"required,gte=8,lte=16"`
 }
 
 func (u *Users) Create(c *gin.Context) {
 	var vd views.Response
 	var form SignupForm
-	if err := parseForm(c, &form); err != nil {
-		vd.SetAlert(err)
-		u.NewView.Render(c, http.StatusInternalServerError, vd)
+	if err := c.Bind(&form); err != nil {
+		vd.SetAlert(models.ErrBadRequst)
+		u.NewView.Render(c, http.StatusBadRequest, vd)
 		return
 	}
-
+	fmt.Println(form)
 	user := models.User{
 		Name:     form.Name,
 		Email:    form.Email,
@@ -67,9 +67,9 @@ func (u *Users) Create(c *gin.Context) {
 func (u *Users) Login(c *gin.Context) {
 	var vd views.Response
 	var form LoginForm
-	if err := parseForm(c, &form); err != nil {
-		vd.SetAlert(err)
-		u.LoginView.Render(c, http.StatusInternalServerError, vd)
+	if err := c.Bind(&form); err != nil {
+		vd.SetAlert(models.ErrBadRequst)
+		u.LoginView.Render(c, http.StatusBadRequest, vd)
 		return
 	}
 

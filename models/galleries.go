@@ -4,7 +4,6 @@ import "github.com/jinzhu/gorm"
 
 const (
 	ErrUserIDRequired modelError = "models: user ID is required"
-	ErrTitleRequired  modelError = "models: title is required"
 )
 
 type GalleryDB interface {
@@ -96,13 +95,6 @@ func (gv *galleryValidator) userIDRequired(g *Gallery) error {
 	return nil
 }
 
-func (gv *galleryValidator) titleRequired(g *Gallery) error {
-	if g.Title == "" {
-		return ErrTitleRequired
-	}
-	return nil
-}
-
 func (gv *galleryValidator) nonZeroID(gallery *Gallery) error {
 	if gallery.ID <= 0 {
 		return ErrIDInvalid
@@ -112,8 +104,7 @@ func (gv *galleryValidator) nonZeroID(gallery *Gallery) error {
 
 func (gv *galleryValidator) Create(gallery *Gallery) error {
 	err := runGalleryValFns(gallery,
-		gv.userIDRequired,
-		gv.titleRequired)
+		gv.userIDRequired)
 	if err != nil {
 		return err
 	}
@@ -122,8 +113,7 @@ func (gv *galleryValidator) Create(gallery *Gallery) error {
 
 func (gv *galleryValidator) Update(gallery *Gallery) error {
 	err := runGalleryValFns(gallery,
-		gv.userIDRequired,
-		gv.titleRequired)
+		gv.userIDRequired)
 	if err != nil {
 		return err
 	}

@@ -31,16 +31,15 @@ func NewGalleries(gs models.GalleryService, is models.ImageService, r *gin.Engin
 }
 
 type GalleryForm struct {
-	Title string `scheme:"title"`
+	Title string `form:"title" binding:"required,lt=30"`
 }
 
 func (g *Galleries) Create(c *gin.Context) {
 	var vd views.Response
 	var form GalleryForm
-
-	if err := parseForm(c, &form); err != nil {
-		vd.SetAlert(err)
-		g.New.Render(c, http.StatusInternalServerError, vd)
+	if err := c.Bind(&form); err != nil {
+		vd.SetAlert(models.ErrBadRequst)
+		g.New.Render(c, http.StatusBadRequest, vd)
 		return
 	}
 
@@ -124,9 +123,9 @@ func (g *Galleries) Update(c *gin.Context) {
 	var vd views.Response
 	vd.Data.Yield = gallery
 	var form GalleryForm
-	if err := parseForm(c, &form); err != nil {
-		vd.SetAlert(err)
-		g.EditView.Render(c, http.StatusInternalServerError, vd)
+	if err := c.Bind(&form); err != nil {
+		vd.SetAlert(models.ErrBadRequst)
+		g.EditView.Render(c, http.StatusBadRequest, vd)
 		return
 	}
 	gallery.Title = form.Title
